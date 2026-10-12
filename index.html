@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'" />
+  <meta name="description" content="WealthDesk 個人資產管理系統：銀行、台美股、基金、成本績效、現金流與資產曝險分析。" />
+  <title>WealthDesk v6 · 全方位金融資產與績效管理</title>
+  <link rel="stylesheet" href="frontend/css/styles.css" />
+  <link rel="stylesheet" href="frontend/css/auth.css" />
+  <link rel="stylesheet" href="frontend/css/sharing.css" />
+  <link rel="stylesheet" href="frontend/css/compare.css" />
+  <link rel="stylesheet" href="frontend/css/pro.css" />
+  <link rel="stylesheet" href="frontend/css/cloud.css" />
+</head>
+<body>
+
+  <div id="auth-screen" class="auth-screen">
+    <div class="auth-layout">
+      <section class="auth-hero" aria-label="WealthDesk 服務介紹">
+        <div class="auth-brand"><span class="brand-mark"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 17 9 10l4 4 8-9"/><path d="M16 5h5v5"/></svg></span><span>wealthdesk<small>PRIVATE FINANCIAL WORKSPACE</small></span></div>
+        <div class="auth-hero-copy"><div class="auth-overline"><span></span> FINANCIAL CLARITY, YOUR WAY</div><h1>你的資產全貌，<br /><em>共享由你決定。</em></h1><p>整合銀行、台股、美股與基金的成本、持倉及損益分析。自己的資產獨立保管，也能依邀請授權家人唯讀查看。</p></div>
+        <div class="auth-showcase" aria-hidden="true"><div class="showcase-top"><span>個人資產中心</span><span class="showcase-dot"></span></div><div class="showcase-title">個人資產獨立，分享權限透明</div><div class="showcase-bar"><i></i><i></i><i></i><i></i></div><div class="showcase-boxes"><span><b>資產整合</b><small>多帳戶管理</small></span><span><b>投資分析</b><small>持有成本與績效</small></span><span><b>資料隔離</b><small>依使用者獨立保存</small></span></div></div>
+        <div class="auth-hero-foot"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg><span>私人資產由 GAS 驗證存取，資料由 Google Sheets 儲存</span></div>
+      </section>
+      <section class="auth-panel" aria-label="帳號登入與註冊">
+        <div class="auth-panel-inner">
+          <div class="auth-mobile-brand">wealthdesk <span>· PRIVATE SPACE</span></div>
+          <div class="auth-intro"><span class="auth-kicker">WELCOME TO WEALTHDESK</span><h2 id="auth-card-title">歡迎回來</h2><p id="auth-card-desc">登入後查看此帳號專屬的資產與分析。</p></div>
+          <div class="auth-tabbar" role="tablist" aria-label="帳號操作"><button type="button" class="active" data-auth-tab="login" role="tab" aria-selected="true">登入帳號</button><button type="button" data-auth-tab="register" role="tab" aria-selected="false">註冊帳號</button></div>
+          <form id="auth-form" class="auth-form">
+            <div class="auth-field register-only" hidden><label for="auth-name">顯示名稱</label><input id="auth-name" name="name" type="text" maxlength="36" minlength="2" autocomplete="name" placeholder="例如：王小明" /></div>
+            <div class="auth-field"><label for="auth-email">Email 帳號</label><input id="auth-email" name="email" type="email" maxlength="140" autocomplete="username" required placeholder="you@example.com" /></div>
+            <div class="auth-field"><div class="auth-field-head"><label for="auth-password">密碼</label><span class="auth-password-hint">至少 8 字，含英文字母和數字</span></div><div class="auth-password-wrap"><input id="auth-password" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required placeholder="輸入密碼" /><button type="button" data-auth-toggle aria-label="顯示或隱藏密碼">顯示</button></div></div>
+            <div class="auth-field register-only" hidden><label for="auth-confirm">確認密碼</label><input id="auth-confirm" name="confirm" type="password" autocomplete="new-password" placeholder="再次輸入密碼" /></div>
+
+            <p id="auth-error" class="auth-form-error" role="alert" aria-live="polite"></p>
+            <button id="auth-submit" class="auth-submit" type="submit">登入資產中心</button>
+          </form>
+          <div class="auth-assist"><button type="button" class="auth-text-link" data-auth-forgot>忘記密碼？寄送重設驗證碼</button></div>
+          <section id="verify-panel" class="wd-auth-extra" hidden>
+            <form id="verify-form" class="auth-form"><div class="auth-field"><label for="verify-email">註冊 Email</label><input id="verify-email" type="email" readonly required /></div><div class="auth-field"><label for="verify-code">信箱驗證碼（8 位數）</label><input id="verify-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="one-time-code" required /></div><button class="auth-submit" id="verify-submit" type="submit">驗證並進入系統</button></form>
+            <div class="auth-extra-actions"><button type="button" class="auth-text-link" data-auth-resend>重新寄送驗證碼</button><button type="button" class="auth-text-link" data-auth-back>返回登入</button></div>
+          </section>
+          <section id="reset-panel" class="wd-auth-extra" hidden>
+            <form id="reset-form" class="auth-form"><div class="auth-field"><label for="reset-email">帳號 Email</label><input id="reset-email" type="email" required placeholder="you@example.com" /></div><button type="button" class="outline-btn" data-auth-reset-request>寄送重設驗證碼</button><div class="auth-field"><label for="reset-code">驗證碼（8 位數）</label><input id="reset-code" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" required /></div><div class="auth-field"><label for="reset-password">新密碼</label><input id="reset-password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required /></div><div class="auth-field"><label for="reset-confirm">再次輸入新密碼</label><input id="reset-confirm" type="password" minlength="8" maxlength="128" autocomplete="new-password" required /></div><button class="auth-submit" id="reset-submit" type="submit">確認重設密碼</button></form><div class="auth-extra-actions"><button type="button" class="auth-text-link" data-auth-back>返回登入</button></div>
+          </section>
+          <p class="auth-fineprint">這是以 Email 與自訂 Session 驗證的雲端帳號。資產資料會儲存於 Google Sheets，本站不連接金融機構。</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="app-shell" id="app-shell" hidden>
+    <aside class="sidebar" id="sidebar" aria-label="主要導覽">
+      <a class="brand" href="#overview" data-page="overview" aria-label="WealthDesk 回到資產總覽">
+        <span class="brand-mark"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17 9 10l4 4 8-9"/><path d="M16 5h5v5"/></svg></span>
+        <span class="brand-name">wealthdesk<small>PERSONAL FINANCE</small></span>
+      </a>
+      <span class="nav-label">主要選單 / WORKSPACE</span>
+      <nav class="sidebar-nav" aria-label="功能頁面">
+        <button class="nav-link is-active" data-page="overview" aria-current="page"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.3"/><rect x="14" y="3" width="7" height="7" rx="1.3"/><rect x="3" y="14" width="7" height="7" rx="1.3"/><rect x="14" y="14" width="7" height="7" rx="1.3"/></svg>資產總覽</button>
+        <button class="nav-link" data-page="analytics"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M7 16l4-5 4 2 5-7"/><circle cx="11" cy="11" r="1"/></svg>深度資產分析 <span class="nav-count">NEW</span></button>
+        <button class="nav-link" data-page="banks"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9 12 4l9 5M4 11h16M5 11v9M10 11v9M14 11v9M19 11v9M3 21h18"/></svg>銀行帳戶 <span class="nav-count" data-count="banks">5</span></button>
+        <button class="nav-link" data-page="investments"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17 9 11l4 4 8-8"/><path d="M15 7h6v6"/></svg>投資部位 <span class="nav-count" data-count="investments">11</span></button>
+        <button class="nav-link" data-page="trades"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg>交易流水 <span class="nav-count">V6</span></button>
+        <button class="nav-link" data-page="performance"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 20V4m0 16h18M6 15l5-5 3 3 6-7"/></svg>績效與 XIRR</button>
+        <button class="nav-link" data-page="cashflow"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16M8 3v18"/></svg>負債與現金流</button>
+        <button class="nav-link" data-page="risks"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m12 7 1 6-5 3"/></svg>風險與財務目標</button>
+      </nav>
+      <span class="nav-label" style="margin-top:25px">協作空間 / COLLABORATION</span>
+      <nav class="sidebar-nav" aria-label="資產共享">
+        <button class="nav-link" data-page="shared"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 20v-2a6 6 0 0 1 12 0v2M14 15a5 5 0 0 1 8 4v1"/></svg>共享給我的資產 <span class="nav-count" id="share-inbox-count" hidden></span></button>
+        <button class="nav-link" data-page="compare"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h18M16 3l5 5-5 5M21 16H3m5-5-5 5 5 5"/></svg>雙人資產比較 <span class="nav-count">NEW</span></button>
+        <button class="nav-link" data-page="sharing"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>我的共享管理</button>
+      </nav>
+      <span class="nav-label" style="margin-top:25px">偏好設定 / PREFERENCES</span>
+      <nav class="sidebar-nav" aria-label="資料管理">
+        <button class="nav-link" data-page="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>資料與設定</button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-note"><div class="sidebar-note-label"><span class="demo-dot"></span> 雲端資產管理</div><p>帳戶與交易需自行建立；系統不會直接讀取銀行或證券帳戶。</p></div>
+      <div class="user-card"><span class="user-avatar" id="user-avatar">WD</span><div class="user-meta"><strong id="user-display-name">我的資產中心</strong><span id="user-email">PERSONAL ACCOUNT</span></div><button type="button" data-action="logout" class="user-logout" title="登出目前帳號" aria-label="登出目前帳號"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg></button></div>
+    </aside>
+    <div class="mobile-overlay" data-action="close-menu" aria-hidden="true"></div>
+    <div class="main-area">
+      <header class="topbar">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0">
+          <button class="icon-btn menu-btn" aria-label="開啟選單" data-action="toggle-menu"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="breadcrumb"><span id="breadcrumb-owner">個人資產中心</span><span>/</span><b id="breadcrumb-page">資產總覽</b></div>
+        </div>
+        <div class="topbar-right"><span id="topbar-user" class="topbar-user"></span><span class="updated-label"><span id="topbar-asof">資料日期</span></span>
+          <button id="privacy-btn" class="icon-btn" data-action="toggle-privacy" title="隱藏 / 顯示金額" aria-label="隱藏資產金額"></button>
+          <button class="outline-btn top-export" data-action="export-json"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 18v3h16v-3"/></svg>匯出 JSON</button>
+        <button class="icon-btn top-logout" title="登出並切換帳號" aria-label="登出並切換帳號" data-action="logout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1 2 2h-7"/></svg></button>
+      </header>
+      <main id="view-root"></main>
+    </div>
+  </div>
+  <dialog id="edit-dialog" class="modal" aria-labelledby="modal-title">
+    <div class="modal-head"><div><h2 id="modal-title">新增金融資產</h2><p id="modal-subtitle">請填寫資產資訊</p></div><button class="icon-btn" data-action="close-modal" aria-label="關閉視窗"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <form id="edit-form"><div class="modal-body"><div class="form-field" style="margin-bottom:17px"><label for="editor-kind">資產類別 *</label><select id="editor-kind" name="editorKind"><option value="bank">銀行存款</option><option value="tw_stock">台股 / ETF</option><option value="us_stock">美股 / ETF</option><option value="fund">基金</option></select></div><div id="editor-fields"></div><p class="field-warning" role="alert" id="modal-error"></p></div><div class="modal-foot"><button type="button" id="delete-entity" class="outline-btn danger-btn" data-action="delete-item" hidden>刪除</button><button type="button" class="outline-btn" data-action="close-modal">取消</button><button type="submit" class="primary-btn">儲存資產</button></div></form>
+  </dialog>
+  <dialog id="password-dialog" class="modal account-dialog" aria-labelledby="password-dialog-title">
+    <div class="modal-head"><div><h2 id="password-dialog-title">變更帳號密碼</h2><p>變更密碼後會撤銷全部舊 Session，資產資料仍保留於雲端。</p></div><button class="icon-btn" type="button" data-action="close-password" aria-label="關閉密碼視窗">✕</button></div>
+    <form id="password-form"><div class="modal-body"><div class="form-field"><label for="old-password">目前密碼</label><input id="old-password" name="oldPassword" type="password" autocomplete="current-password" required /></div><div class="form-field"><label for="new-password">新密碼</label><input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128" required /><small>8–128 字元，須包含英文字母和數字。</small></div><div class="form-field"><label for="confirm-new-password">確認新密碼</label><input id="confirm-new-password" name="confirmPassword" type="password" autocomplete="new-password" required /></div><p class="field-warning" id="password-error" role="alert"></p></div><div class="modal-foot"><button type="button" class="outline-btn" data-action="close-password">取消</button><button type="submit" class="primary-btn" id="password-save-btn">更新密碼</button></div></form>
+  </dialog>
+  <dialog id="grant-config-dialog" class="modal account-dialog wd4-config-dialog" aria-labelledby="grant-config-title">
+    <div class="modal-head"><div><h2 id="grant-config-title">修改共享權限</h2><p id="grant-config-person">調整受邀者可查看的資產內容</p></div><button class="icon-btn" type="button" data-action="grant-config-close" aria-label="關閉共享設定視窗">✕</button></div>
+    <form id="grant-config-form"><input type="hidden" name="grantId" /><div class="modal-body"><div class="form-field"><label for="grant-config-scope">共享範圍</label><select id="grant-config-scope" name="scope"><option value="summary">僅資產總覽</option><option value="investments">投資與統計</option><option value="full">全部金融資產（唯讀）</option></select></div><div class="form-field"><label for="grant-config-expiry">到期日（選填）</label><input id="grant-config-expiry" type="date" name="expiresAt" /></div><label class="wd4-check"><input name="allowExport" type="checkbox" /><span>允許對方下載授權範圍的 JSON 資料</span></label><p class="field-warning" id="grant-config-error" role="alert"></p></div><div class="modal-foot"><button class="outline-btn" data-action="grant-config-close" type="button">取消</button><button class="primary-btn" type="submit">儲存共享設定</button></div></form>
+  </dialog>
+  <dialog id="pro-dialog" class="modal wd6-dialog" aria-labelledby="pro-title"><div class="modal-head"><div><h2 id="pro-title">新增金融資料</h2><p>儲存後會重新計算目前帳號的資產及績效</p></div><button type="button" class="icon-btn" data-action="pro-close" aria-label="關閉表單">✕</button></div><form id="pro-form"><div class="modal-body"><div id="pro-fields"></div><p id="pro-error" class="field-warning" role="alert"></p></div><div class="modal-foot"><button type="button" class="outline-btn" data-action="pro-close">取消</button><button type="submit" class="primary-btn" id="pro-save-btn">儲存資料</button></div></form></dialog>
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+  <script type="application/json" id="initial-json">{"meta":{"appName":"WealthDesk","asOf":"2026-10-10","baseCurrency":"TWD","analyticsVersion":6,"note":"私人雲端資產"},"fxRates":{"TWD":1,"USD":31.6,"JPY":0.218},"bankAccounts":[],"assets":[],"transactions":[],"holdings":[],"history":[],"activity":[],"cashFlows":[],"liabilities":[],"goals":[],"performanceEvents":[]}</script>
+  <script src="frontend/js/analysis-engine.js"></script>
+  <script src="frontend/js/wealth-engine.js"></script>
+  <script src="frontend/js/pro-ui.js"></script>
+  <script src="frontend/js/config.js"></script>
+  <script src="frontend/js/gas-api.js"></script>
+  <script src="frontend/js/auth.js"></script>
+  <script src="frontend/js/sharing.js"></script>
+  <script src="frontend/js/compare-engine.js"></script>
+  <script src="frontend/js/app.js"></script>
+</body>
+</html>

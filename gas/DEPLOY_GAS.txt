@@ -1,0 +1,8 @@
+WealthDesk GAS backend
+1. Create a standalone Apps Script project.
+2. Add three .gs files: Backend.gs, PortfolioEngine.gs, AnalyticsEngine.gs.
+3. Set APP_SECRET (64 random hex chars) in Script Properties.
+4. Run setupWealthDesk() and approve MailApp/Spreadsheet scopes.
+5. Deploy Web App: Execute as Me, access Anyone, copy /exec URL.
+6. Paste URL into frontend/config.js.
+NOTE: Never publish APP_SECRET or your Google Sheet data.

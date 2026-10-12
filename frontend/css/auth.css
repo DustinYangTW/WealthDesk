@@ -1,0 +1,57 @@
+/* WealthDesk v3 account and sign-in experience; applies over v2 visual system. */
+[hidden]{display:none!important}
+.auth-screen{min-height:100vh;background:#f4f6fb}
+.auth-layout{min-height:100vh;display:grid;grid-template-columns:minmax(420px,.98fr) minmax(450px,1.02fr)}
+.auth-hero{display:flex;flex-direction:column;background:radial-gradient(circle at 110% 10%,rgba(110,129,223,.19),transparent 42%),linear-gradient(145deg,#13253f 3%,#111c31 78%,#15223a);color:#fff;padding:42px clamp(36px,6.25vw,112px) 35px;position:relative;overflow:hidden}
+.auth-hero::after{content:"";position:absolute;z-index:0;width:560px;height:560px;border:1px solid #889ce018;border-radius:50%;top:12%;right:-305px;box-shadow:0 0 0 68px #8ea6e90a,0 0 0 136px #8ea6e908;pointer-events:none}
+.auth-hero>*{position:relative;z-index:1}
+.auth-brand{display:flex;align-items:center;gap:13px;color:#fff;font-size:23px;letter-spacing:-.9px;font-weight:850}
+.auth-brand .brand-mark{height:45px;width:45px;border-radius:14px;box-shadow:none}
+.auth-brand small{font-size:9px;letter-spacing:2.45px;color:#8295b3;display:block;margin-top:3px;font-weight:800}
+.auth-hero-copy{margin:auto 0 44px;max-width:590px;padding-top:65px}
+.auth-overline{display:flex;gap:9px;align-items:center;color:#95aaf0;font-size:10px;font-weight:800;letter-spacing:2.5px}
+.auth-overline span{width:22px;height:2px;background:#7f8fff;border-radius:3px}
+.auth-hero h1{font-size:clamp(38px,4.6vw,68px);line-height:1.21;letter-spacing:-2.9px;font-weight:850;margin:23px 0 20px}
+.auth-hero h1 em{font-style:normal;color:#9dacff}
+.auth-hero-copy p{font-size:14px;color:#9cacc6;line-height:2;max-width:440px;margin:0}
+.auth-showcase{border:1px solid #48618658;background:linear-gradient(125deg,#233654e8,#1b2d47da);border-radius:20px;padding:23px 27px 24px;max-width:510px;box-shadow:0 28px 65px #050e2038}
+.showcase-top{display:flex;align-items:center;justify-content:space-between;color:#b5c4dc;font-size:11px;font-weight:700}
+.showcase-dot{height:9px;width:9px;border-radius:50%;background:#4cd2b4;box-shadow:0 0 0 4px #52d6b41f}
+.showcase-title{font-size:19px;font-weight:750;margin-top:21px;letter-spacing:-.6px;color:#f7faff}
+.showcase-bar{display:flex;height:9px;gap:3px;border-radius:15px;overflow:hidden;margin:19px 0 22px;background:#1c2840}
+.showcase-bar i{height:100%;display:block;background:#6473e5;flex:4}.showcase-bar i:nth-child(2){flex:2.4;background:#44bca8}.showcase-bar i:nth-child(3){flex:2;background:#e4b16c}.showcase-bar i:nth-child(4){flex:1.4;background:#a994e6}
+.showcase-boxes{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.showcase-boxes span{padding-left:11px;border-left:1px solid #4d638b}
+.showcase-boxes b{display:block;font-size:11px;color:#edf4fe;font-weight:750}.showcase-boxes small{display:block;font-size:10px;color:#94a8c4;line-height:1.55;margin-top:5px}
+.auth-hero-foot{margin-top:30px;display:flex;align-items:center;gap:9px;color:#8097ba;font-size:11px;line-height:1.6}.auth-hero-foot svg{flex:none;color:#8a9fe0}
+.auth-panel{padding:58px 34px 36px;display:grid;place-items:center;background:#fbfcff}
+.auth-panel-inner{width:100%;max-width:455px;margin:auto}
+.auth-mobile-brand{display:none}.auth-kicker{display:block;color:#6573db;font-weight:850;font-size:10px;letter-spacing:2.4px}
+.auth-intro h2{font-size:32px;letter-spacing:-1.2px;color:#1d2d45;margin:12px 0 9px;font-weight:860}
+.auth-intro p{font-size:13px;line-height:1.7;color:#91a0b3;margin:0}
+.auth-tabbar{margin-top:29px;background:#eef1f7;border-radius:11px;padding:5px;display:flex;gap:3px}
+.auth-tabbar button{flex:1;border:0;border-radius:8px;background:transparent;color:#8b99ae;font-size:13px;font-weight:760;min-height:41px;transition:color .2s,background .2s,box-shadow .2s}
+.auth-tabbar button.active{background:#fff;color:#35476d;box-shadow:0 3px 12px #21335813}
+.auth-form{margin-top:26px;display:grid;gap:18px}
+.auth-field{display:grid;gap:8px}.auth-field>label,.auth-field-head label{color:#43526b;font-size:12px;font-weight:800}
+.auth-field-head{display:flex;justify-content:space-between;gap:9px;align-items:center}.auth-password-hint{color:#a1adc0;font-size:10px;white-space:nowrap}
+.auth-field input{border:1px solid #e0e6f1;border-radius:11px;height:48px;background:#fff;padding:0 14px;color:#273750;font-size:13px;width:100%;outline:0;box-shadow:0 3px 10px #27375006;transition:border-color .18s,box-shadow .18s}
+.auth-field input:focus{border-color:#7886e5;box-shadow:0 0 0 3px #5b6be31a}
+.auth-field input::placeholder{color:#aab5c5}.auth-password-wrap{position:relative}.auth-password-wrap input{padding-right:75px}
+.auth-password-wrap button{position:absolute;right:11px;top:50%;transform:translateY(-50%);height:30px;border:0;background:#f2f4fa;color:#6e7c94;border-radius:6px;font-size:11px;font-weight:750;padding:0 11px}
+.auth-sample-checkbox{display:flex;align-items:flex-start;gap:9px;color:#66738b;font-size:12px;line-height:1.6;cursor:pointer}.auth-sample-checkbox input{margin-top:4px;accent-color:#5d6fe0}
+.auth-form-error{font-size:11px;color:#c44159;line-height:1.55;min-height:16px;margin:-8px 0 -8px}
+.auth-submit{border:0;background:#5968df;color:#fff;border-radius:11px;width:100%;height:49px;font-size:13px;font-weight:820;box-shadow:0 10px 22px #5360d92d;transition:background .18s,transform .18s}.auth-submit:hover{background:#4857cb}.auth-submit:active{transform:translateY(1px)}.auth-submit:disabled{opacity:.65}
+.auth-demo-section{margin-top:34px;border-top:1px solid #e7ecf3;padding-top:25px}.auth-demo-title{display:flex;align-items:center;justify-content:space-between;gap:10px}.auth-demo-title>span{font-size:12px;font-weight:800;color:#475671}.auth-demo-title i{font-size:9px;font-style:normal;font-weight:850;letter-spacing:1.6px;color:#a9b5c5}
+.auth-demo-grid{display:grid;gap:9px;margin-top:14px}.auth-demo-grid button{width:100%;display:flex;align-items:center;text-align:left;gap:11px;border:1px solid #e7ebf2;background:#fff;border-radius:12px;padding:11px 13px;transition:border-color .2s,transform .2s,background .2s}.auth-demo-grid button:hover{border-color:#929be8;background:#fafbff;transform:translateY(-1px)}.auth-demo-grid button>span:nth-child(2){flex:1;min-width:0}.auth-demo-grid button strong{font-size:12px;color:#374862;display:block}.auth-demo-grid button small{font-size:10px;color:#9dabbd;display:block;margin-top:4px}.auth-demo-grid button svg{color:#a7b3c2}
+.demo-avatar{height:37px;width:37px;border-radius:11px;background:#e9eeff;color:#5564d2;font-size:13px;font-weight:800;display:grid;place-items:center;flex:none}.demo-avatar.is-b{background:#e6f8f4;color:#14a68a}
+.demo-help{font-size:10px;color:#8e9aab;line-height:1.7;margin-top:10px}.demo-help code{font-size:10px;background:#eef0fa;color:#5261b8;border-radius:5px;padding:2px 5px}
+.auth-fineprint{font-size:10px;line-height:1.8;color:#a0abb9;margin:28px 0 0;border-top:1px solid #eef0f4;padding-top:16px}
+.user-meta{flex:1;min-width:0}.user-meta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:138px}.user-logout{display:grid;place-items:center;border:1px solid #344b6e;color:#aebed8;background:#283d5b;border-radius:9px;min-width:34px;height:34px}.user-logout:hover{background:#365077;color:#fff}.topbar-user{font-size:11px;font-weight:800;color:#56678c;padding:7px 10px;border-radius:8px;background:#f4f6ff;white-space:nowrap}.top-logout{flex:none}
+.account-profile-panel{margin-bottom:18px}.account-profile-panel .panel-inner{padding:24px}.account-profile-heading{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.account-profile-heading>div{flex:1;min-width:0}.account-profile-heading h2{font-size:17px;margin:3px 0 6px}.account-profile-heading p{font-size:12px;color:#8190a4;margin:0}.account-profile-heading p strong{color:#3c4a64}.profile-avatar{flex:none;display:grid;place-items:center;height:52px;width:52px;border-radius:15px;color:#fff;font-size:19px;font-weight:800;background:linear-gradient(135deg,#6977e1,#4c5abf)}.local-only-tag{background:#eff3ff;border:1px solid #dfe7ff;border-radius:99px;padding:7px 10px;font-size:10px;color:#6576d0;white-space:nowrap;font-weight:750}
+.account-privacy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:21px 0}.account-privacy-grid>div{display:flex;flex-direction:column;gap:7px;background:#f8faff;border:1px solid #edf1f8;border-radius:12px;padding:16px}.account-privacy-grid svg{color:#6c7add}.account-privacy-grid strong{font-size:12px;color:#40516e}.account-privacy-grid span{font-size:11px;line-height:1.7;color:#8b99ac}.account-dialog .modal-body{display:grid;gap:16px}.account-dialog .form-field{display:grid;gap:7px}.account-dialog .form-field small{font-size:10px;color:#92a2b7}
+@media(max-width:1180px){.auth-layout{grid-template-columns:minmax(360px,.95fr) minmax(410px,1.05fr)}.auth-hero{padding:32px 35px 31px}.auth-panel{padding:34px}.auth-hero h1{font-size:43px}.topbar-user{display:none}}
+@media(max-width:800px){.auth-layout{grid-template-columns:1fr}.auth-hero{min-height:170px;padding:24px 26px 26px}.auth-brand{font-size:20px}.auth-hero-copy{margin:29px 0 0;padding-top:0}.auth-hero h1{font-size:30px;letter-spacing:-1.3px;margin:11px 0 10px}.auth-hero-copy p{font-size:12px;line-height:1.6}.auth-overline{font-size:9px}.auth-showcase,.auth-hero-foot{display:none}.auth-panel{display:block;padding:35px 20px 42px}.auth-panel-inner{max-width:480px}.auth-intro h2{font-size:27px}.auth-fineprint{margin-bottom:0}}
+@media(max-width:670px){.topbar{gap:9px}.topbar-right{gap:7px}.top-export{display:none}.top-logout{min-width:35px}.breadcrumb{gap:5px;font-size:11px}.breadcrumb>span:first-child{max-width:110px;overflow:hidden;text-overflow:ellipsis}.account-privacy-grid{grid-template-columns:1fr}.local-only-tag{margin-left:65px}.account-profile-heading p{overflow-wrap:anywhere}.auth-demo-section{margin-top:27px}}
+@media(max-width:390px){.auth-hero{padding:18px 20px 21px}.auth-hero h1{font-size:27px}.auth-panel{padding:25px 16px 40px}.auth-intro h2{font-size:25px}.auth-demo-title i{display:none}.auth-password-hint{font-size:9px}.breadcrumb>span:first-child{max-width:76px}}
+@media(prefers-reduced-motion:reduce){.auth-submit,.auth-demo-grid button,.auth-field input{transition:none}.auth-demo-grid button:hover{transform:none}}

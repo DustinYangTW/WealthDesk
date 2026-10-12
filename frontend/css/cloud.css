@@ -1,0 +1,10 @@
+/* Production cloud-auth refinements without replacing the v6 visual system */
+.auth-assist{display:flex;justify-content:flex-end;margin:12px 0 6px}
+.auth-text-link{border:0;background:none;color:#4159c5;cursor:pointer;font:inherit;font-size:13px;font-weight:650;padding:7px 0;text-decoration:underline;text-underline-offset:3px}
+.auth-extra-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:14px}
+.wd-auth-extra{padding-top:18px;border-top:1px solid #e6e9f2;margin-top:20px}
+.wd-auth-extra .auth-form{display:grid;gap:14px}
+.wd-auth-extra[hidden],.auth-form[hidden]{display:none!important}
+.wd-auth-extra .outline-btn{width:100%;justify-content:center}
+.auth-text-link:focus-visible{outline:2px solid #4159c5;outline-offset:4px;border-radius:3px}
+@media(max-width:480px){.auth-extra-actions{flex-wrap:wrap}}

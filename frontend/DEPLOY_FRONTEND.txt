@@ -1,0 +1,34 @@
+WealthDesk 前端檔案規劃與部署
+
+根目錄 index.html 載入本資料夾中的靜態資源，維持無建置工具的 GitHub Pages 部署方式。
+
+css/
+  styles.css       共用版面、元件與響應式樣式
+  auth.css         登入、註冊與帳號驗證畫面
+  sharing.css      資產共享介面
+  compare.css      資產比較介面
+  pro.css          交易、績效等進階資料介面
+  cloud.css        雲端狀態與同步提示
+
+js/
+  config.js        GAS /exec 公開網址與逾時設定
+  gas-api.js       GAS 請求、Session 與錯誤處理
+  auth.js          註冊、驗證、登入、登出與密碼管理
+  sharing.js       共享邀請、權限與唯讀資料
+  wealth-engine.js 資產和交易資料模型
+  analysis-engine.js 分析計算
+  compare-engine.js 資產比較計算
+  pro-ui.js        進階資料編輯介面
+  app.js           頁面路由、渲染與事件入口
+  config.example.js 可複製的設定範本
+
+data/ 僅存測試與參考 JSON；正式帳號不會載入示範資料。
+
+index.html 目前以傳統 script 標籤載入全域程式，順序代表相依順序；新增或搬移 JS 時，
+請同步更新根目錄 index.html。CSS 與 JS 使用相對路徑，發布時須保留資料夾結構。
+
+部署步驟：
+1. 先部署 GAS 後端（詳見專案根目錄 README.md）。
+2. 在 js/config.js 設定 GAS Web App /exec 網址。
+3. 將專案根目錄的 index.html 與整個 frontend/ 一起發布；不要只發布此資料夾內容。
+4. 先用測試帳號確認 A/B 登入與共享權限，再匯入正式資產資料。

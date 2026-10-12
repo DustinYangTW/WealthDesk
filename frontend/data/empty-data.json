@@ -1,0 +1,24 @@
+{
+  "meta": {
+    "appName": "WealthDesk",
+    "asOf": "2026-10-10",
+    "baseCurrency": "TWD",
+    "analyticsVersion": 6,
+    "note": "私人雲端資產"
+  },
+  "fxRates": {
+    "TWD": 1,
+    "USD": 31.6,
+    "JPY": 0.218
+  },
+  "bankAccounts": [],
+  "assets": [],
+  "transactions": [],
+  "holdings": [],
+  "history": [],
+  "activity": [],
+  "cashFlows": [],
+  "liabilities": [],
+  "goals": [],
+  "performanceEvents": []
+}
