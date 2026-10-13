@@ -21,7 +21,7 @@
    const data=clone(input),asOf=data.meta?.asOf||'2026-10-10';
    data.meta={...data.meta,analyticsVersion:6};
    if(!Array.isArray(data.assets)||!Array.isArray(data.transactions))legacyToLedger(data);
-   for(const [field,defaultValue] of Object.entries({cashFlows:[],liabilities:[],goals:[],performanceEvents:[]}))if(!Array.isArray(data[field]))data[field]=defaultValue;
+   for(const [field,defaultValue] of Object.entries({cashFlows:[],liabilities:[],goals:[],performanceEvents:[],bankHistory:[],holdingsHistory:[]}))if(!Array.isArray(data[field]))data[field]=defaultValue;
    data.holdings=reconcile(data).holdings;
    return data;
  }

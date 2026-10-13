@@ -367,6 +367,8 @@
       "fundTwd": 255709.3
     }
   ],
+  "bankHistory": [],
+  "holdingsHistory": [],
   "activity": [
     {
       "id": "activity-01",

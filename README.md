@@ -12,7 +12,10 @@ WealthDesk_v6_GitHubPages_GAS/
 ├── frontend/
 │   ├── css/                  ← 按用途拆分的頁面樣式
 │   ├── js/                   ← 設定、API、登入、共享、UI 與計算引擎
+│   │   ├── history-import.js ← Excel 歷史資產解析與欄位驗證
+│   │   └── vendor/jszip.min.js ← 本機 XLSX 解壓元件（授權檔同目錄）
 │   ├── data/                 ← 參考 JSON；正式登入不自動灌入假資料
+│   ├── templates/            ← 可下載的 Excel 範本
 │   └── DEPLOY_FRONTEND.txt   ← 前端部署與目錄說明
 ├── gas/                      ← 複製檔案內容至你的 Apps Script 專案
 │   ├── Backend.gs            ← Web App API、Session、權限、Sheets
@@ -82,6 +85,10 @@ WealthDesk_v6_GitHubPages_GAS/
 5. 開啟 `https://你的帳號.github.io/你的repo/`；登入頁應出現「登入 / 註冊」，不會自動灌入示範帳號或假資產。
 6. 註冊測試 Email（建議先建立 A、B 兩個信箱），到信箱收取 8 位數驗證碼，驗證並登入。
 7. 在 A 建立一個銀行帳戶/投資項目，重新整理頁面確認資料仍在；B 註冊後，由 A 寄送共享邀請給 B，B 接受後可查看並比較，但不可修改 A 的資料。
+
+### 匯入歷史資產
+
+登入後前往「資料與設定」，下載 `frontend/templates/wealthdesk-history-template.xlsx`。範本包含「填寫說明」、「月度總覽」、「銀行餘額」及「歷史持倉」四個工作表；三張資料表可各自填寫及匯入，只處理有資料的月份。同一資料表、同月份再次匯入會更新該月快照，其他資料表與月份保留。銀行餘額與持倉保存為歷史檢視快照，不會改變目前資產或交易；總資產趨勢需填寫「月度總覽」。若 GAS 已部署，更新 `gas/Backend.gs` 並將 Web App 部署到新版本，讓後端一併驗證歷史快照欄位。
 
 **既有 v6 資料移轉**：先在舊 v6 系統「匯出完整 JSON」，再於新版「資料與設定 → 匯入 JSON」上傳。原本由舊版 `localStorage` AES-GCM 加密的資料無法直接被 GAS 自動讀取或解密；務必透過舊系統匯出明文 JSON 後再匯入新帳號。`frontend/data/mock-data.json` 只供示範和測試使用，不會自動載入到真實使用者。
 

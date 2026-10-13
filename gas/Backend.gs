@@ -304,7 +304,7 @@ function wd_logout(actor) {
   return {loggedOut:true};
 }
 function wd_blank() {
-  return {meta:{appName:'WealthDesk',asOf:wd_today(),baseCurrency:'TWD',analyticsVersion:6,note:'這是你在雲端的私人資產資料。'},fxRates:{TWD:1,USD:31.6,JPY:0.218},bankAccounts:[],assets:[],transactions:[],holdings:[],history:[],activity:[],cashFlows:[],liabilities:[],goals:[],performanceEvents:[]};
+  return {meta:{appName:'WealthDesk',asOf:wd_today(),baseCurrency:'TWD',analyticsVersion:6,note:'這是你在雲端的私人資產資料。'},fxRates:{TWD:1,USD:31.6,JPY:0.218},bankAccounts:[],assets:[],transactions:[],holdings:[],history:[],bankHistory:[],holdingsHistory:[],activity:[],cashFlows:[],liabilities:[],goals:[],performanceEvents:[]};
 }
 function wd_readOwn(actor) {return wd_readPortfolio(actor.user.id);}
 function wd_readPortfolio(userId) {
@@ -319,7 +319,9 @@ function wd_readPortfolio(userId) {
 }
 function wd_validatePortfolio(candidate) {
   if(!candidate||typeof candidate!=='object'||Array.isArray(candidate)) wd_fail('VALIDATION','資產 JSON 格式不正確');
-  var fields=['bankAccounts','holdings','history','activity','assets','transactions','cashFlows','liabilities','goals','performanceEvents'];
+  if(candidate.bankHistory===undefined)candidate.bankHistory=[];
+  if(candidate.holdingsHistory===undefined)candidate.holdingsHistory=[];
+  var fields=['bankAccounts','holdings','history','bankHistory','holdingsHistory','activity','assets','transactions','cashFlows','liabilities','goals','performanceEvents'];
   fields.forEach(function(f){if(!Array.isArray(candidate[f])||candidate[f].length>12000)wd_fail('VALIDATION',f+' 資料格式或筆數無效');});
   if(!candidate.fxRates||typeof candidate.fxRates!=='object') wd_fail('VALIDATION','缺少匯率資料');
   ['USD','JPY'].forEach(function(c){if(!(Number(candidate.fxRates[c])>0)||!Number.isFinite(Number(candidate.fxRates[c]))) wd_fail('VALIDATION','匯率不正確');});
@@ -331,6 +333,14 @@ function wd_validatePortfolio(candidate) {
   });
   var ids={};candidate.bankAccounts.forEach(function(b){
     if(!b.bank||!b.accountName||!['TWD','USD','JPY'].includes(b.currency)||!Number.isFinite(Number(b.balance))||Number(b.balance)<0||/[<>]/.test(String(b.bank)+String(b.accountName)))wd_fail('VALIDATION','銀行資料不正確');ids[b.id]=b;
+  });
+  candidate.bankHistory.forEach(function(s){
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(s.month||''))||!Array.isArray(s.accounts)||s.accounts.length>12000)wd_fail('VALIDATION','歷史銀行快照格式不正確');
+    s.accounts.forEach(function(b){if(!b.bank||!b.accountName||!['TWD','USD','JPY'].includes(b.currency)||!Number.isFinite(Number(b.balance))||Number(b.balance)<0||!Number.isFinite(Number(b.fxRate))||Number(b.fxRate)<=0||!Number.isFinite(Number(b.valueTwd))||Number(b.valueTwd)<0||/[<>]/.test(String(b.bank)+String(b.accountName)))wd_fail('VALIDATION','歷史銀行餘額不正確');});
+  });
+  candidate.holdingsHistory.forEach(function(s){
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(String(s.month||''))||!Array.isArray(s.holdings)||s.holdings.length>12000)wd_fail('VALIDATION','歷史持倉快照格式不正確');
+    s.holdings.forEach(function(h){var costOk=h.avgCost===null||h.avgCost===undefined||(Number.isFinite(Number(h.avgCost))&&Number(h.avgCost)>=0);if(!h.symbol||!h.name||!['tw_stock','us_stock','fund'].includes(h.type)||!['TWD','USD','JPY'].includes(h.currency)||!Number.isFinite(Number(h.quantity))||Number(h.quantity)<=0||!Number.isFinite(Number(h.currentPrice))||Number(h.currentPrice)<0||!Number.isFinite(Number(h.fxRate))||Number(h.fxRate)<=0||!Number.isFinite(Number(h.marketValueTwd))||Number(h.marketValueTwd)<0||!costOk||/[<>]/.test(String(h.symbol)+String(h.name)+String(h.broker||'')))wd_fail('VALIDATION','歷史持倉資料不正確');});
   });
   candidate.assets.forEach(function(a){
     if(!a.symbol||!a.name||!['tw_stock','us_stock','fund'].includes(a.type)||!['TWD','USD','JPY'].includes(a.currency)||!Number.isFinite(Number(a.currentPrice))||Number(a.currentPrice)<0||/[<>]/.test(String(a.name)+String(a.symbol)+String(a.broker||'')))wd_fail('VALIDATION','投資標的資料不正確');

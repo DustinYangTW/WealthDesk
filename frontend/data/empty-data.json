@@ -16,6 +16,8 @@
   "transactions": [],
   "holdings": [],
   "history": [],
+  "bankHistory": [],
+  "holdingsHistory": [],
   "activity": [],
   "cashFlows": [],
   "liabilities": [],

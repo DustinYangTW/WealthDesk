@@ -112,7 +112,14 @@
   </dialog>
   <dialog id="pro-dialog" class="modal wd6-dialog" aria-labelledby="pro-title"><div class="modal-head"><div><h2 id="pro-title">新增金融資料</h2><p>儲存後會重新計算目前帳號的資產及績效</p></div><button type="button" class="icon-btn" data-action="pro-close" aria-label="關閉表單">✕</button></div><form id="pro-form"><div class="modal-body"><div id="pro-fields"></div><p id="pro-error" class="field-warning" role="alert"></p></div><div class="modal-foot"><button type="button" class="outline-btn" data-action="pro-close">取消</button><button type="submit" class="primary-btn" id="pro-save-btn">儲存資料</button></div></form></dialog>
   <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
-  <script type="application/json" id="initial-json">{"meta":{"appName":"WealthDesk","asOf":"2026-10-10","baseCurrency":"TWD","analyticsVersion":6,"note":"私人雲端資產"},"fxRates":{"TWD":1,"USD":31.6,"JPY":0.218},"bankAccounts":[],"assets":[],"transactions":[],"holdings":[],"history":[],"activity":[],"cashFlows":[],"liabilities":[],"goals":[],"performanceEvents":[]}</script>
+  <dialog id="history-import-dialog" class="modal history-import-dialog" aria-labelledby="history-import-title">
+    <div class="modal-head"><div><h2 id="history-import-title">匯入歷史資產</h2><p>只更新 Excel 中有資料的月份與類別</p></div><button type="button" class="icon-btn" data-action="history-import-close" aria-label="關閉匯入預覽">✕</button></div>
+    <div class="modal-body"><div id="history-import-preview"></div><p id="history-import-error" class="field-warning" role="alert"></p></div>
+    <div class="modal-foot"><button type="button" class="outline-btn" data-action="history-import-close">取消</button><button type="button" id="history-import-apply" class="primary-btn" data-action="history-import-apply">確認匯入</button></div>
+  </dialog>
+  <script type="application/json" id="initial-json">{"meta":{"appName":"WealthDesk","asOf":"2026-10-10","baseCurrency":"TWD","analyticsVersion":6,"note":"私人雲端資產"},"fxRates":{"TWD":1,"USD":31.6,"JPY":0.218},"bankAccounts":[],"assets":[],"transactions":[],"holdings":[],"history":[],"bankHistory":[],"holdingsHistory":[],"activity":[],"cashFlows":[],"liabilities":[],"goals":[],"performanceEvents":[]}</script>
+  <script src="frontend/js/vendor/jszip.min.js"></script>
+  <script src="frontend/js/history-import.js"></script>
   <script src="frontend/js/analysis-engine.js"></script>
   <script src="frontend/js/wealth-engine.js"></script>
   <script src="frontend/js/pro-ui.js"></script>

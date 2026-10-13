@@ -43,7 +43,7 @@
   const signMoney = (v) => `${v>=0?'+':'−'}${twd(Math.abs(v))}`;
   const dateZh = (date) => String(date||'').replace(/^(\d{4})-(\d{2})-(\d{2})$/,'$1/$2/$3');
   // Portfolio data is not initialized or rendered until authentication succeeds.
-  const state = { data:null, user:null,cryptoKey:null,page:'overview',period:'6',stressPrice:0,stressFx:0,filter:'all',sort:'value',search:'',privacy:false,edit:null,sharePrivateKey:null,sharedView:null,familyRows:null,compareView:null,compareTarget:null,comparePeriod:'6',compareMode:'index',compareNeedsRefresh:false,toastTimeout:null };
+  const state = { data:null, user:null,cryptoKey:null,page:'overview',period:'6',stressPrice:0,stressFx:0,filter:'all',sort:'value',search:'',privacy:false,edit:null,sharePrivateKey:null,sharedView:null,familyRows:null,compareView:null,compareTarget:null,comparePeriod:'6',compareMode:'index',compareNeedsRefresh:false,bankHistoryMonth:null,holdingsHistoryMonth:null,historyImportPlan:null,toastTimeout:null };
   const $ = (s,from=document) => from.querySelector(s);
   const byId = (id) => document.getElementById(id);
   let persistQueue=Promise.resolve(),saveError=null,pendingSaves=0;
@@ -69,7 +69,7 @@
     if(upgraded.meta.asOf<currentDay)upgraded.meta.asOf=currentDay;
     const needsUpgrade=JSON.stringify(upgraded)!==JSON.stringify(data);
     state.user=user;state.cryptoKey=key;state.data=upgraded;state.sharePrivateKey=sharePrivateKey;state.sharedView=null;state.familyRows=null;state.compareView=null;state.compareTarget=null;state.comparePeriod='6';state.compareMode='index';state.compareNeedsRefresh=false;
-    state.page='overview';state.period='6';state.stressPrice=0;state.stressFx=0;state.filter='all';state.sort='value';state.search='';state.privacy=false;state.edit=null;
+    state.page='overview';state.period='6';state.stressPrice=0;state.stressFx=0;state.filter='all';state.sort='value';state.search='';state.privacy=false;state.edit=null;state.bankHistoryMonth=null;state.holdingsHistoryMonth=null;state.historyImportPlan=null;
     byId('user-display-name').textContent=user.name;
     byId('user-email').textContent=user.email;
     byId('user-avatar').textContent=user.name.slice(0,1);
@@ -355,22 +355,26 @@
     toast('統計分析 JSON 已匯出');
   }
 
+  function historyMonthOptions(records,selected){return records.map(x=>`<option value="${esc(x.month)}" ${x.month===selected?'selected':''}>${esc(x.month)}</option>`).join('');}
+  function historyPanelHeader(title,desc,records,selected,kind){return `<div class="panel-heading"><div><h2>${title}</h2><p>${desc}</p></div>${records.length?`<label class="history-month-picker"><span>月份</span><select class="input-select" data-history-month-kind="${kind}" aria-label="選擇${title}月份">${historyMonthOptions(records,selected)}</select></label>`:''}</div>`;}
+  function renderBankHistory(){const records=[...(state.data.bankHistory||[])].sort((a,b)=>a.month.localeCompare(b.month)),selected=records.some(x=>x.month===state.bankHistoryMonth)?state.bankHistoryMonth:records.at(-1)?.month,snapshot=records.find(x=>x.month===selected),accounts=snapshot?.accounts||[],total=accounts.reduce((sum,x)=>sum+Number(x.valueTwd||0),0);return `<section class="panel history-panel"><div class="panel-inner">${historyPanelHeader('歷史銀行餘額','月末餘額與匯率快照。只供歷史檢視，不會改變目前帳戶餘額。',records,selected,'bank')}${snapshot?`<div class="history-total">${esc(selected)} · 台幣換算合計 <strong class="num sensitive">${twd(total)}</strong></div><div class="history-table-wrap"><table class="history-table"><thead><tr><th>銀行</th><th>帳戶代稱</th><th>幣別</th><th class="align-r">月末餘額</th><th class="align-r">月末匯率</th><th class="align-r">台幣換算</th></tr></thead><tbody>${accounts.map(x=>`<tr><td>${esc(x.bank)}</td><td>${esc(x.accountName)}</td><td>${esc(x.currency)}</td><td class="align-r num sensitive">${money(x.balance,x.currency)}</td><td class="align-r num">${fmtNum(x.fxRate,4)}</td><td class="align-r num sensitive">${twd(x.valueTwd)}</td></tr>`).join('')}</tbody></table></div>`:renderEmpty('尚無歷史銀行餘額','在資料設定匯入 Excel 範本中的「銀行餘額」工作表')}</div></section>`;}
+  function renderHoldingsHistory(){const records=[...(state.data.holdingsHistory||[])].sort((a,b)=>a.month.localeCompare(b.month)),selected=records.some(x=>x.month===state.holdingsHistoryMonth)?state.holdingsHistoryMonth:records.at(-1)?.month,snapshot=records.find(x=>x.month===selected),items=snapshot?.holdings||[],total=items.reduce((sum,x)=>sum+Number(x.marketValueTwd||0),0);return `<section class="panel history-panel"><div class="panel-inner">${historyPanelHeader('歷史持倉','依月份保存數量、月末價格與匯率。資料不會加入目前交易流水。',records,selected,'holdings')}${snapshot?`<div class="history-total">${esc(selected)} · 投資市值合計 <strong class="num sensitive">${twd(total)}</strong></div><div class="history-table-wrap"><table class="history-table"><thead><tr><th>標的</th><th>類別</th><th>券商／帳戶</th><th>幣別</th><th class="align-r">持有數量</th><th class="align-r">月末價格</th><th class="align-r">市值 TWD</th><th class="align-r">平均成本</th></tr></thead><tbody>${items.map(x=>`<tr><td><strong>${esc(x.symbol)}</strong><small>${esc(x.name)}</small></td><td>${esc(types[x.type]||x.type)}</td><td>${esc([x.broker,x.accountName].filter(Boolean).join(' · ')||'—')}</td><td>${esc(x.currency)}</td><td class="align-r num">${fmtNum(x.quantity,4)}</td><td class="align-r num">${money(x.currentPrice,x.currency,2)}</td><td class="align-r num sensitive">${twd(x.marketValueTwd)}</td><td class="align-r num">${x.avgCost===null?'—':money(x.avgCost,x.currency,2)}</td></tr>`).join('')}</tbody></table></div>`:renderEmpty('尚無歷史持倉','在資料設定匯入 Excel 範本中的「歷史持倉」工作表')}</div></section>`;}
   function renderBanks(){const s=summary(),usd=state.data.bankAccounts.filter(b=>b.currency==='USD').reduce((sum,b)=>sum+Number(b.balance),0);return `<div class="content">${heroHeader('銀行帳戶','統一管理各家銀行存款、幣別餘額與帳戶資訊。','BANK ACCOUNTS',`<button class="primary-btn" data-action="add-bank">${ic('plus',15)} 新增帳戶</button>`)}
     <div class="sub-kpi-grid"><section class="panel sub-kpi"><span>存款總額 · TWD 換算</span><strong class="num sensitive">${twd(s.banks)}</strong><small>${state.data.bankAccounts.length} 個銀行帳戶</small></section><section class="panel sub-kpi"><span>新台幣存款</span><strong class="num sensitive">${twd(state.data.bankAccounts.filter(b=>b.currency==='TWD').reduce((a,b)=>a+Number(b.balance),0))}</strong><small>原幣金額</small></section><section class="panel sub-kpi"><span>美元存款</span><strong class="num sensitive">${money(usd,'USD')}</strong><small>約 ${twd(usd*rate('USD'))}</small></section></div>
     <div class="section-row"><h2 class="section-title">全部銀行帳戶</h2><span class="text-help">金額以自行記錄的餘額計算</span></div><div class="bank-grid">${state.data.bankAccounts.map((b,i)=>`<div class="panel bank-card"><div class="bank-card-top">${bankLogo(b,i)}<div class="account-descr"><strong>${esc(b.bank)}</strong><span>${esc(b.accountName)} · ${esc(b.accountMasked)}</span></div><span class="type-pill">${esc(b.currency)}</span></div><div class="bank-card-amount num sensitive">${money(b.balance,b.currency)}</div><div class="bank-card-foot"><span>${b.currency==='TWD'?'台幣存款':'約 '+twd(Number(b.balance)*rate(b.currency))} · ${dateZh(b.updatedAt)} 更新</span><button class="link-btn" data-action="edit-bank" data-id="${esc(b.id)}">編輯 ${ic('chevron',13)}</button></div></div>`).join('')||renderEmpty('還沒有銀行帳戶','按新增帳戶建立你的第一筆紀錄')}</div>
-    <div class="insight-row">${ic('circle',18)}<span><strong>幣別換算說明：</strong>美元按照你設定的匯率 1 USD = ${fmtNum(rate('USD'),2)} TWD 換算。帳戶金額需手動維護，沒有連接任何銀行。</span></div>
+    <div class="insight-row">${ic('circle',18)}<span><strong>幣別換算說明：</strong>美元按照你設定的匯率 1 USD = ${fmtNum(rate('USD'),2)} TWD 換算。帳戶金額需手動維護，沒有連接任何銀行。</span></div>${renderBankHistory()}
     </div>`;}
   function renderInvestments(){const s=summary();return `<div class="content">${heroHeader('投資部位管理','查看台股、美股與基金的首次進場日期、持有成本及未實現損益。','INVESTMENT PORTFOLIO',`<button class="primary-btn" data-action="add-holding">${ic('plus',15)} 新增投資</button>`)}
     <div class="sub-kpi-grid"><section class="panel sub-kpi"><span>投資總市值 · TWD</span><strong class="num sensitive">${twd(s.invest)}</strong><small>依手動設定的匯率換算</small></section><section class="panel sub-kpi"><span>總持有成本 · TWD</span><strong class="num sensitive">${twd(s.invest-s.pnl)}</strong><small>數量 × 平均成本 × 匯率</small></section><section class="panel sub-kpi"><span>未實現損益</span><strong class="num sensitive ${s.pnl>=0?'up':'down'}">${signMoney(s.pnl)}</strong><small>${pct(s.roi)} · 未扣成本與稅費</small></section></div>
     <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>全部持有部位</h2><p>單筆成本與現價皆以標的原幣計算，市值與總損益換算成台幣</p></div><span class="panel-topline" id="match-count">${filteredHoldings().length} 筆部位</span></div>
     <div class="table-toolbar"><div class="tabs" role="group" aria-label="投資類別篩選">${[['all','全部'],['tw_stock','台股'],['us_stock','美股'],['fund','基金']].map(([key,name])=>`<button class="tab ${state.filter===key?'active':''}" data-action="filter" data-filter="${key}" aria-pressed="${state.filter===key}">${name}</button>`).join('')}</div><div style="display:flex;flex-wrap:wrap;gap:9px"><label class="search-box">${ic('search',15)}<input id="investment-search" type="search" placeholder="搜尋代碼、名稱或券商" value="${esc(state.search)}" aria-label="搜尋投資部位" /></label><select class="input-select" id="investment-sort" aria-label="投資部位排序"><option value="value" ${state.sort==='value'?'selected':''}>市值由高至低</option><option value="profit" ${state.sort==='profit'?'selected':''}>損益由高至低</option><option value="date" ${state.sort==='date'?'selected':''}>最近進場日期</option></select></div></div>
-    <div id="holdings-results">${holdingsTable(filteredHoldings())}</div><div class="data-caption">平均成本以原幣記錄。若分批進場，請以加權平均成本填寫；「進場日期」記錄首次購入日期。</div></div></section></div>`;}
+    <div id="holdings-results">${holdingsTable(filteredHoldings())}</div><div class="data-caption">平均成本以原幣記錄。若分批進場，請以加權平均成本填寫；「進場日期」記錄首次購入日期。</div></div></section>${renderHoldingsHistory()}</div>`;}
   function renderSettings(){const d=state.data;let hasLegacy=false;try{hasLegacy=!!localStorage.getItem(LEGACY_KEY);}catch(_){}
     const accountPanel=`<section class="panel account-profile-panel"><div class="panel-inner"><div class="account-profile-heading"><span class="profile-avatar">${esc(state.user.name.slice(0,1))}</span><div><span class="eyebrow">ACCOUNT & DATA PRIVACY</span><h2>帳號與資料空間</h2><p>目前登入：<strong>${esc(state.user.name)}</strong> · ${esc(state.user.email)}</p></div><span class="local-only-tag">GAS 雲端帳號</span></div><div class="account-privacy-grid"><div>${ic('shield',19)}<strong>依使用者儲存</strong><span>每個帳號都有獨立的銀行、持倉與分析資料。</span></div><div>${ic('database',19)}<strong>後端驗證</strong><span>資產資料由 GAS 檢查 Session 與帳號權限，保存於試算表。</span></div><div>${ic('circle',19)}<strong>跨裝置同步</strong><span>使用同一帳號可在其他裝置取得最新資料，忘記密碼可透過信箱重設。</span></div></div><div class="settings-actions"><button class="outline-btn" data-action="open-password">${ic('shield',15)} 變更密碼</button><button class="outline-btn" data-action="logout">${ic('arrow',15)} 登出／切換帳號</button>${hasLegacy?`<button class="outline-btn" data-action="import-legacy">${ic('database',15)} 匯入舊版 v2 資料</button>`:''}</div><p class="data-note">Google Sheets 由部署者保管，資料並非端對端加密；後端會驗證每次資料存取的權限。請定期匯出 JSON，並限制試算表分享權限。</p></div></section>`;
-    return `<div class="content">${heroHeader('帳號、資料與設定','每位使用者都有專屬資產資料，可以在這裡變更密碼、匯出 JSON 或設定匯率。','DATA & PREFERENCES')}
+    return `<div class="content">${heroHeader('帳號、資料與設定','每位使用者都有專屬資產資料，可以在這裡變更密碼、匯入歷史資料或設定匯率。','DATA & PREFERENCES')}
     ${accountPanel}
     <div class="data-grid"><section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>JSON 資料預覽</h2><p>顯示目前帳號在雲端儲存的部分資料</p></div><button class="outline-btn" data-action="copy-json">${ic('credit',14)} 複製 JSON</button></div><pre class="data-code" id="data-preview">${esc(JSON.stringify({meta:d.meta,fxRates:d.fxRates,bankAccounts:d.bankAccounts.slice(0,2),holdings:d.holdings.slice(0,2)},null,2))}</pre><div class="data-note">上方僅顯示部分範例；點選右上角「匯出 JSON」即可下載包含所有銀行帳戶、投資部位、歷史資料的完整內容。</div></div></section>
-    <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>匯率設定</h2><p>統一以新台幣（TWD）計算淨資產</p></div>${ic('swap',18)}</div><form id="fx-form" class="settings-list"><div class="form-field"><label for="usd-rate">1 美元（USD）兌新台幣</label><input id="usd-rate" name="USD" type="number" min="0.0001" step="0.0001" required value="${esc(d.fxRates.USD)}"/><small>用於美元銀行帳戶、美股及美元基金</small></div><div class="form-field"><label for="jpy-rate">1 日圓（JPY）兌新台幣</label><input id="jpy-rate" name="JPY" type="number" min="0.0001" step="0.0001" required value="${esc(d.fxRates.JPY)}"/><small>可供後續擴充日圓資產使用</small></div><button type="submit" class="primary-btn" style="align-self:flex-start">${ic('check',15)} 儲存匯率</button></form><div class="divider"></div><div class="panel-heading"><div><h2>雲端資料管理</h2><p>資料保存於 Google Sheets</p></div></div><div class="settings-actions"><button class="outline-btn" data-action="export-json">${ic('download',15)} 匯出完整 JSON</button><button class="outline-btn" data-action="import-json">${ic('database',15)} 匯入 JSON</button><input id="import-json-input" type="file" accept=".json,application/json" hidden /><button class="outline-btn" data-action="reset-data">${ic('refresh',15)} 清空我的資料</button></div><p class="data-note">系統會依 Session 將資料存入雲端，若儲存失敗請勿登出或關閉分頁。支援從本機 JSON 匯入完整資產資料。匯入會覆蓋目前帳號的雲端資產資料。請先匯出 JSON 備份。此系統不會直接連接銀行或券商。</p></div></section></div></div>`;}
+    <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>匯率設定</h2><p>統一以新台幣（TWD）計算淨資產</p></div>${ic('swap',18)}</div><form id="fx-form" class="settings-list"><div class="form-field"><label for="usd-rate">1 美元（USD）兌新台幣</label><input id="usd-rate" name="USD" type="number" min="0.0001" step="0.0001" required value="${esc(d.fxRates.USD)}"/><small>用於美元銀行帳戶、美股及美元基金</small></div><div class="form-field"><label for="jpy-rate">1 日圓（JPY）兌新台幣</label><input id="jpy-rate" name="JPY" type="number" min="0.0001" step="0.0001" required value="${esc(d.fxRates.JPY)}"/><small>可供後續擴充日圓資產使用</small></div><button type="submit" class="primary-btn" style="align-self:flex-start">${ic('check',15)} 儲存匯率</button></form><div class="divider"></div><div class="panel-heading"><div><h2>匯入歷史資產</h2><p>總覽、銀行餘額與持倉可分別填寫及匯入</p></div></div><div class="settings-actions"><a class="outline-btn" href="frontend/templates/wealthdesk-history-template.xlsx" download>${ic('download',15)} 下載 Excel 範本</a><button class="outline-btn" data-action="import-history">${ic('database',15)} 匯入 Excel 資料</button><input id="history-import-input" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden /></div><p class="data-note">只匯入有填資料的工作表。同月份重匯會更新該類別的快照，其他類別保留。總資產趨勢需要填寫「月度總覽」。</p><div class="divider"></div><div class="panel-heading"><div><h2>雲端資料管理</h2><p>資料保存於 Google Sheets</p></div></div><div class="settings-actions"><button class="outline-btn" data-action="export-json">${ic('download',15)} 匯出完整 JSON</button><button class="outline-btn" data-action="import-json">${ic('database',15)} 匯入 JSON</button><input id="import-json-input" type="file" accept=".json,application/json" hidden /><button class="outline-btn" data-action="reset-data">${ic('refresh',15)} 清空我的資料</button></div><p class="data-note">系統會依 Session 將資料存入雲端，若儲存失敗請勿登出或關閉分頁。支援從本機 JSON 匯入完整資產資料。匯入會覆蓋目前帳號的雲端資產資料。請先匯出 JSON 備份。此系統不會直接連接銀行或券商。</p></div></section></div></div>`;}
   // v4 sharing: presentation is a separate read-only surface. It never passes
   // someone else's decrypted portfolio into the existing editor/store.
   const grantState=g=>g.expired?'expired':g.status;
@@ -629,6 +633,37 @@
       state.data=candidate;await persist();render();toast(`已同步匯入 ${merged.bankAccounts.length} 個帳戶及 ${candidate.holdings.length} 筆投資`);
     }catch(e){toast(`匯入失敗：${e.message}`);}
   }
+  function monthList(records){return [...new Set(records.map(x=>x.month))].sort();}
+  function historyImportPreviewRow(label,records,existing){
+    if(!records.length)return `<li><strong>${label}</strong><span>未填寫，不變更</span></li>`;
+    const months=monthList(records),old=new Set((existing||[]).map(x=>x.month)),replaced=months.filter(m=>old.has(m));
+    return `<li><strong>${label}</strong><span>${months.length} 個月份、${records.length} 筆資料${replaced.length?`；更新既有月份 ${replaced.map(esc).join('、')}`:''}</span></li>`;
+  }
+  async function importHistoryExcel(file){
+    if(!file)return;
+    try{
+      if(file.size>10*1024*1024)throw new Error('Excel 檔案不得超過 10MB');
+      const plan=await WealthHistoryImport.parse(file);
+      if(!plan.summary.length&&!plan.bankHistory.length&&!plan.holdingsHistory.length)throw new Error('三張資料工作表都沒有可匯入的資料列');
+      state.historyImportPlan=plan;
+      byId('history-import-preview').innerHTML=`<p>即將匯入以下工作表。相同月份會更新該工作表的資料，其他工作表與月份保留。</p><ul class="history-import-list">${historyImportPreviewRow('月度總覽',plan.summary,state.data.history)}${historyImportPreviewRow('銀行餘額',plan.bankHistory,state.data.bankHistory)}${historyImportPreviewRow('歷史持倉',plan.holdingsHistory,state.data.holdingsHistory)}</ul><p class="data-note">匯入的銀行餘額與持倉是月末快照，不會改變目前帳戶、投資部位或交易流水。只有「月度總覽」資料會更新總資產趨勢。</p>`;
+      byId('history-import-error').textContent='';byId('history-import-apply').disabled=false;byId('history-import-dialog').showModal();
+    }catch(error){toast(`Excel 匯入預覽失敗：${error.message||'檔案格式不正確'}`);}
+  }
+  function upsertHistoryMonths(existing,incoming){const byMonth=new Map((existing||[]).map(x=>[x.month,x]));incoming.forEach(x=>byMonth.set(x.month,x));return [...byMonth.values()].sort((a,b)=>a.month.localeCompare(b.month));}
+  async function applyHistoryImport(){
+    const plan=state.historyImportPlan;if(!plan)return;
+    const button=byId('history-import-apply'),previous=state.data;button.disabled=true;button.textContent='儲存中…';
+    const candidate=clone(state.data);candidate.history=upsertHistoryMonths(candidate.history,plan.summary);candidate.bankHistory=upsertHistoryMonths(candidate.bankHistory,plan.bankHistory);candidate.holdingsHistory=upsertHistoryMonths(candidate.holdingsHistory,plan.holdingsHistory);state.data=WealthPro.migrate(candidate);
+    try{
+      await persist();
+      if(plan.bankHistory.length)state.bankHistoryMonth=plan.bankHistory.at(-1).month;
+      if(plan.holdingsHistory.length)state.holdingsHistoryMonth=plan.holdingsHistory.at(-1).month;
+      state.historyImportPlan=null;byId('history-import-dialog').close();render();
+      const count=plan.summary.length+plan.bankHistory.length+plan.holdingsHistory.length;toast(`已匯入 ${count} 個月份的歷史資料並同步至雲端`);
+    }catch(error){state.data=previous;byId('history-import-error').textContent=`儲存失敗，資料未完成匯入：${error.message||'請稍後再試'}`;}
+    finally{button.disabled=false;button.textContent='確認匯入';}
+  }
   function resetData(){if(!window.confirm('確定清空此帳號全部資產資料？這會同步覆蓋 Google Sheets 的內容，且無法在介面復原！'))return;const fresh=clone(seed);fresh.meta.asOf=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Taipei'});state.data=WealthPro.migrate(fresh);const task=persist();render();task.then(()=>toast('已清空雲端資產')).catch(()=>{});}
   async function startCompare(grantId=null){
     const priorUser=state.user?.id;
@@ -718,7 +753,7 @@
     const nav=e.target.closest('[data-page]');if(nav){if(nav.dataset.page==='compare')startCompare();else navigate(nav.dataset.page);return;}
     const btn=e.target.closest('[data-action]');if(!btn)return;const action=btn.dataset.action;
     if(['grant-accept','grant-decline','grant-open','shared-back','grant-revoke','grant-config','grant-config-close','grant-export','open-family','compare-open'].includes(action)){sharingClick(action,btn);return;}
-    if(['shared-detail','family','compare'].includes(state.page)&&['export-json','copy-json','import-json','reset-data','add-bank','add-holding','edit-bank','edit-holding','delete-item','export-analysis','export-monthly','export-report-json'].includes(action)){toast('唯讀模式不允許修改或匯出未授權內容');return;}
+    if(['shared-detail','family','compare'].includes(state.page)&&['export-json','copy-json','import-json','import-history','history-import-apply','reset-data','add-bank','add-holding','edit-bank','edit-holding','delete-item','export-analysis','export-monthly','export-report-json'].includes(action)){toast('唯讀模式不允許修改或匯出未授權內容');return;}
     if(action?.startsWith('pro-')){WealthProUI.handleAction(btn,proCtx());return;}
     if(action==='compare-reload'){startCompare(btn.dataset.id);}
     else if(action==='compare-period'){state.comparePeriod=btn.dataset.period;render();}
@@ -736,6 +771,9 @@
     else if(action==='export-json')exportJson();
     else if(action==='copy-json')copyJson();
     else if(action==='import-json')byId('import-json-input')?.click();
+    else if(action==='import-history')byId('history-import-input')?.click();
+    else if(action==='history-import-apply')applyHistoryImport();
+    else if(action==='history-import-close'){state.historyImportPlan=null;byId('history-import-dialog').close();}
     else if(action==='reset-data')resetData();
     else if(action==='logout')logout();
     else if(action==='open-password'){byId('password-error').textContent='';byId('password-form').reset();byId('password-dialog').showModal();}
@@ -753,10 +791,11 @@
     if(e.target.id==='stress-price'){state.stressPrice=Number(e.target.value);refreshScenario();}
     if(e.target.id==='stress-fx'){state.stressFx=Number(e.target.value);refreshScenario();}
   });
-  document.addEventListener('change',(e)=>{if(e.target.id==='import-json-input'){importJsonFile(e.target.files?.[0]);e.target.value='';}if(e.target.id==='investment-sort'){state.sort=e.target.value;refreshResults();}if(e.target.id==='compare-owner-select'){startCompare(e.target.value);}if(e.target.id==='editor-kind')renderEditorFields(e.target.value,null);if(e.target.closest('#pro-form'))WealthProUI.onFieldChange(e.target,proCtx());});
+  document.addEventListener('change',(e)=>{if(e.target.id==='import-json-input'){importJsonFile(e.target.files?.[0]);e.target.value='';}if(e.target.id==='history-import-input'){importHistoryExcel(e.target.files?.[0]);e.target.value='';}if(e.target.dataset.historyMonthKind==='bank'){state.bankHistoryMonth=e.target.value;render();}if(e.target.dataset.historyMonthKind==='holdings'){state.holdingsHistoryMonth=e.target.value;render();}if(e.target.id==='investment-sort'){state.sort=e.target.value;refreshResults();}if(e.target.id==='compare-owner-select'){startCompare(e.target.value);}if(e.target.id==='editor-kind')renderEditorFields(e.target.value,null);if(e.target.closest('#pro-form'))WealthProUI.onFieldChange(e.target,proCtx());});
   byId('edit-form').addEventListener('submit',saveEditor);
   byId('password-form').addEventListener('submit',changePassword);
   byId('edit-dialog').addEventListener('click',(e)=>{if(e.target.id==='edit-dialog')byId('edit-dialog').close();});
+  byId('history-import-dialog').addEventListener('close',()=>{state.historyImportPlan=null;});
   document.addEventListener('submit',(e)=>{if(e.target.id==='pro-form'){WealthProUI.submit(e,proCtx());return;}if(e.target.id==='share-invite-form'){handleInviteSubmit(e);return;}if(e.target.id==='grant-config-form'){handleGrantConfig(e);return;}if(e.target.id==='fx-form'){e.preventDefault();const fd=new FormData(e.target);const usd=Number(fd.get('USD')),jpy=Number(fd.get('JPY'));if(!(usd>0&&jpy>0)){toast('請輸入大於零的有效匯率');return;}state.data.fxRates.USD=usd;state.data.fxRates.JPY=jpy;state.data=WealthPro.migrate(state.data);const task=persist();render();task.then(()=>toast('換算匯率已同步')).catch(()=>{});}});
   window.addEventListener('wealthdesk:session-expired',()=>{
     if(!state.user)return;
