@@ -6,13 +6,10 @@
   <meta name="color-scheme" content="light" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://script.google.com https://script.googleusercontent.com https://*.googleusercontent.com; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'self'" />
   <meta name="description" content="WealthDesk 個人資產管理系統：銀行、台美股、基金、成本績效、現金流與資產曝險分析。" />
+  <!-- 更新此值即可讓下方所有 CSS 與 JS 重新載入，避開瀏覽器舊快取。 -->
+  <meta name="asset-version" content="1.0.0" />
   <title>WealthDesk v6 · 全方位金融資產與績效管理</title>
-  <link rel="stylesheet" href="frontend/css/styles.css" />
-  <link rel="stylesheet" href="frontend/css/auth.css" />
-  <link rel="stylesheet" href="frontend/css/sharing.css" />
-  <link rel="stylesheet" href="frontend/css/compare.css" />
-  <link rel="stylesheet" href="frontend/css/pro.css" />
-  <link rel="stylesheet" href="frontend/css/cloud.css" />
+  <script src="frontend/js/asset-loader.js"></script>
 </head>
 <body>
 
@@ -118,16 +115,5 @@
     <div class="modal-foot"><button type="button" class="outline-btn" data-action="history-import-close">取消</button><button type="button" id="history-import-apply" class="primary-btn" data-action="history-import-apply">確認匯入</button></div>
   </dialog>
   <script type="application/json" id="initial-json">{"meta":{"appName":"WealthDesk","asOf":"2026-10-10","baseCurrency":"TWD","analyticsVersion":6,"note":"私人雲端資產"},"fxRates":{"TWD":1,"USD":31.6,"JPY":0.218},"bankAccounts":[],"assets":[],"transactions":[],"holdings":[],"history":[],"bankHistory":[],"holdingsHistory":[],"activity":[],"cashFlows":[],"liabilities":[],"goals":[],"performanceEvents":[]}</script>
-  <script src="frontend/js/vendor/jszip.min.js"></script>
-  <script src="frontend/js/history-import.js"></script>
-  <script src="frontend/js/analysis-engine.js"></script>
-  <script src="frontend/js/wealth-engine.js"></script>
-  <script src="frontend/js/pro-ui.js"></script>
-  <script src="frontend/js/config.js"></script>
-  <script src="frontend/js/gas-api.js"></script>
-  <script src="frontend/js/auth.js"></script>
-  <script src="frontend/js/sharing.js"></script>
-  <script src="frontend/js/compare-engine.js"></script>
-  <script src="frontend/js/app.js"></script>
 </body>
 </html>
