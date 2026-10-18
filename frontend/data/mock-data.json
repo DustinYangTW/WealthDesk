@@ -17,7 +17,6 @@
       "id": "bank-001",
       "bank": "中國信託",
       "accountName": "主要活存帳戶",
-      "accountMasked": "•••• 6802",
       "currency": "TWD",
       "balance": 512300,
       "updatedAt": "2026-10-10"
@@ -26,7 +25,6 @@
       "id": "bank-002",
       "bank": "國泰世華",
       "accountName": "薪資轉帳帳戶",
-      "accountMasked": "•••• 0921",
       "currency": "TWD",
       "balance": 240580,
       "updatedAt": "2026-10-10"
@@ -35,7 +33,6 @@
       "id": "bank-003",
       "bank": "台新銀行",
       "accountName": "Richart 數位帳戶",
-      "accountMasked": "•••• 3205",
       "currency": "TWD",
       "balance": 185230,
       "updatedAt": "2026-10-10"
@@ -44,7 +41,6 @@
       "id": "bank-004",
       "bank": "玉山銀行",
       "accountName": "美元外幣存款",
-      "accountMasked": "•••• 4118",
       "currency": "USD",
       "balance": 8200,
       "updatedAt": "2026-10-09"
@@ -53,7 +49,6 @@
       "id": "bank-005",
       "bank": "永豐銀行",
       "accountName": "投資備用金",
-      "accountMasked": "•••• 7329",
       "currency": "TWD",
       "balance": 98000,
       "updatedAt": "2026-10-08"

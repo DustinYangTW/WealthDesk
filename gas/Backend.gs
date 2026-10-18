@@ -323,6 +323,7 @@ function wd_validatePortfolio(candidate) {
   if(candidate.holdingsHistory===undefined)candidate.holdingsHistory=[];
   var fields=['bankAccounts','holdings','history','bankHistory','holdingsHistory','activity','assets','transactions','cashFlows','liabilities','goals','performanceEvents'];
   fields.forEach(function(f){if(!Array.isArray(candidate[f])||candidate[f].length>12000)wd_fail('VALIDATION',f+' 資料格式或筆數無效');});
+  candidate.bankAccounts=candidate.bankAccounts.map(function(b){var clean=Object.assign({},b);delete clean.accountMasked;return clean;});
   if(!candidate.fxRates||typeof candidate.fxRates!=='object') wd_fail('VALIDATION','缺少匯率資料');
   ['USD','JPY'].forEach(function(c){if(!(Number(candidate.fxRates[c])>0)||!Number.isFinite(Number(candidate.fxRates[c]))) wd_fail('VALIDATION','匯率不正確');});
   fields.filter(function(f){return f!=='history';}).forEach(function(f){
@@ -450,7 +451,7 @@ function wd_project(data,scope) {
     result.ledgerOverview={realizedTwd:ledger.realizedTwd,dividendsTwd:ledger.dividendsTwd,feesTwd:ledger.feesTwd};
   }
   if(scope==='full'){
-    result.bankAccounts=d.bankAccounts.map(function(b){return Object.assign({},b,{accountMasked:'•••• ••••'});});
+    result.bankAccounts=d.bankAccounts.map(function(b){var clean=Object.assign({},b);delete clean.accountMasked;return clean;});
     result.activity=d.activity;
   }
   return result;
