@@ -138,9 +138,9 @@
   function assetLogo(h){const text=h.type==='tw_stock'?h.symbol.slice(0,2):h.type==='us_stock'?h.symbol.slice(0,2):'基';return `<span class="asset-symbol ${h.type==='us_stock'?'us':h.type==='fund'?'fund':''}">${esc(text)}</span>`;}
   function heroHeader(title,desc,kicker='FINANCIAL OVERVIEW',action='') {return `<div class="page-heading"><div><div class="eyebrow">${esc(kicker)}</div><h1>${esc(title)}</h1><p>${esc(desc)}</p></div><div class="page-actions"><span class="demo-pill">${ic('circle',12)} CLOUD DATA</span>${action}</div></div>`;}
   function metric(title,value,foot,iconName,extra='',primary=false) {return `<section class="panel kpi-card ${primary?'total-card':''}"><div class="mini-label">${esc(title)}</div><span class="kpi-icon">${ic(iconName,17)}</span><div class="value num sensitive">${value}</div><div class="kpi-foot">${foot}</div>${extra}</section>`;}
-  function drawTrend(curTotal) {
-    const items=state.data.history.slice(-6).map(x=>({...x})); if(!items.length)return renderEmpty('尚無歷史快照',(state.data.bankHistory||[]).length?'已匯入銀行餘額快照；此處的總資產趨勢讀取「月度總覽」，請到資料設定補上月度總覽資料。':'請到資料設定填寫「月度總覽」，才能顯示總資產歷史趨勢。');
-    items[items.length-1].totalTwd=curTotal;
+  function drawTrend() {
+    const items=analysis().history.slice(-6).map(x=>({...x}));
+    if(items.length<2){const hasImportedHistory=(state.data.history||[]).length||(state.data.bankHistory||[]).length||(state.data.holdingsHistory||[]).length;return renderEmpty('歷史資料不足',hasImportedHistory?'已匯入的月度總覽、銀行餘額與歷史持倉都會納入資產趨勢；目前至少需要兩個不同月份才能看出變化。':'請匯入至少兩個不同月份的月度總覽、銀行餘額或歷史持倉資料，才能顯示資產趨勢。');}
     const raw=items.map(x=>Number(x.totalTwd)); const floor=Math.floor(Math.min(...raw)*.96/100000)*100000;const ceil=Math.ceil(Math.max(...raw)*1.035/100000)*100000;const lower=ceil===floor?floor-100000:floor;const upper=ceil===floor?ceil+100000:ceil;
     const left=72,right=720,top=28,bottom=206;
     const pts=raw.map((v,i)=>({x:left+(right-left)*i/(raw.length-1||1),y:bottom-(v-lower)/(upper-lower)*(bottom-top),v,month:items[i].month.slice(5)}));
@@ -169,7 +169,7 @@
     return `<div class="table-wrap"><table class="asset-table"><thead><tr><th>投資標的</th><th>類別</th><th>首次進場日期</th><th class="align-r">持有數量</th><th class="align-r">平均成本</th><th class="align-r">現價 / 淨值</th><th class="align-r">市值 (TWD)</th><th class="align-r">未實現損益</th>${canEdit?'<th></th>':''}</tr></thead><tbody>${items.map(h=>`<tr><td class="name-cell"><div class="asset-name">${assetLogo(h)}<span class="asset-name-info"><b>${esc(h.symbol)}</b><span>${esc(h.name)}</span></span></div></td><td><span class="type-pill ${h.type}">${types[h.type]}</span></td><td class="num">${dateZh(h.entryDate)}</td><td class="align-r num">${fmtNum(h.quantity,h.quantity%1?2:0)}</td><td class="align-r num sensitive">${money(h.avgCost,h.currency,2)}</td><td class="align-r num sensitive">${money(h.currentPrice,h.currency,2)}</td><td class="align-r num strong sensitive">${twd(h.valueTwd)}</td><td class="align-r num"><span class="pnl-value sensitive ${h.pnlTwd>=0?'up':'down'}">${signMoney(h.pnlTwd)}<small>${pct(h.pnlPct)}</small></span></td>${canEdit?`<td><button type="button" class="table-action" data-action="edit-holding" data-id="${esc(h.id)}" aria-label="編輯 ${esc(h.symbol)}">編輯</button></td>`:''}</tr>`).join('')}</tbody></table></div>
     <div class="mobile-holdings">${items.map(h=>`<div class="holding-mobile"><div><div class="holding-mobile-title">${assetLogo(h)}<div class="asset-name-info"><b>${esc(h.symbol)} · ${esc(h.name)}</b><span>${esc(types[h.type])} · ${esc(h.broker)}</span></div></div><div class="mobile-meta"><span>進場 ${dateZh(h.entryDate)}</span><span>成本 <b class="sensitive">${money(h.avgCost,h.currency,2)}</b></span></div>${canEdit?`<button class="table-action" data-action="edit-holding" data-id="${esc(h.id)}">編輯部位 ${ic('chevron',12)}</button>`:''}</div><div class="holding-mobile-right"><strong class="num sensitive">${twd(h.valueTwd)}</strong><small class="num sensitive ${h.pnlTwd>=0?'up':'down'}">${signMoney(h.pnlTwd)} (${pct(h.pnlPct)})</small></div></div>`).join('')}</div>`;
   }
-  function renderOverview(){const s=summary(),previous=Number(state.data.history.at(-2)?.totalTwd||s.total),diff=s.total-previous;return `<div class="content">
+  function renderOverview(){const s=summary(),history=analysis().history,previous=Number(history.at(-2)?.totalTwd||s.total),diff=s.total-previous;return `<div class="content">
     ${heroHeader('每一筆資產，都清楚掌握。','彙整銀行存款、台股、美股與基金，一頁看懂你的財務全貌。','YOUR FINANCIAL OVERVIEW',`<button class="primary-btn" data-action="add-holding">${ic('plus',15)} 新增投資</button>`)}
     <div class="kpi-grid">
       ${metric('總金融資產',twd(s.total),`<strong>${diff>=0?'+':'−'}${twd(Math.abs(diff))}</strong><span>相較上月總值（含資金流動）</span>`,'trend','',true)}
@@ -177,7 +177,7 @@
       ${metric('投資部位市值',twd(s.invest),`<strong>${state.data.holdings.length} 個部位</strong><span>· 台美股／基金</span>`,'pie')}
       ${metric('未實現投資損益',signMoney(s.pnl),`<strong class="${s.pnl>=0?'up':'down'}">${pct(s.roi)}</strong><span>相對持有成本，不含稅費</span>`,'arrow')}
     </div>
-    <div class="analytics-grid"><section class="panel chart-panel"><div class="panel-inner"><div class="panel-heading"><div><h2>總資產趨勢</h2><p>每月資產總額 · 來自你保存的歷史快照</p></div><span class="panel-topline">近 6 個月</span></div>${drawTrend(s.total)}<div class="chart-caption"><span><i></i>台幣總值</span><span>總資產變化含存提款與外部資金流，並非單純投資報酬率</span></div></div></section>${renderAllocation(s)}</div>
+    <div class="analytics-grid"><section class="panel chart-panel"><div class="panel-inner"><div class="panel-heading"><div><h2>總資產趨勢</h2><p>月度總覽、銀行餘額與歷史持倉快照</p></div><span class="panel-topline">近 6 個月</span></div>${drawTrend()}<div class="chart-caption"><span><i></i>台幣總值</span><span>總資產變化含存提款與外部資金流，並非單純投資報酬率</span></div></div></section>${renderAllocation(s)}</div>
     ${WealthProUI.overview(state.data)}
     <div class="analysis-teaser panel"><div class="teaser-intro"><span class="teaser-symbol">${ic('trend',22)}</span><div><span class="eyebrow">SMART FINANCIAL INSIGHTS</span><h2>不只記帳，更要看懂資產表現。</h2><p>目前外幣曝險、前三大持倉集中度、獲利部位與現金水位，都可以從 JSON 即時計算。</p></div></div><div class="teaser-metrics"><span><small>外幣曝險</small><b>${precise(analysis().currencyWeight)}</b></span><span><small>前三大持倉占比</small><b>${precise(analysis().top3Weight)}</b></span><span><small>獲利部位數</small><b>${analysis().profitable} / ${s.holdings.length}</b></span></div><button class="primary-btn" data-page="analytics">開啟深度分析 ${ic('chevron',15)}</button></div>
     <div class="second-grid"><section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>銀行帳戶</h2><p>多家銀行與不同幣別的可用資金</p></div><button class="link-btn" data-page="banks">查看全部 ${ic('chevron',13)}</button></div><div class="account-list">${bankLines(5)}</div></div></section><section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>近期資金動態</h2><p>你建立的資金紀錄 · 尚未直接連接銀行</p></div><span class="panel-topline">個人紀錄</span></div><div class="activity-list">${activityLines()}</div></div></section></div>
@@ -211,7 +211,7 @@
   }
   function chartHistory(result, selected) {
     const rows=selected.list;
-    if(rows.length<2){const detail=(state.data.bankHistory||[]).length?'你匯入的「銀行餘額」只會顯示在銀行帳戶頁的歷史資料，不會建立目前帳戶或總資產趨勢。請在「資料設定」填寫「月度總覽」，並提供至少兩個月份。':'請在「資料設定」匯入至少兩個月份的「月度總覽」資料。';return renderEmpty('歷史資料不足',detail);}
+    if(rows.length<2){const hasImportedHistory=(state.data.history||[]).length||(state.data.bankHistory||[]).length||(state.data.holdingsHistory||[]).length,detail=hasImportedHistory?'已匯入的月度總覽、銀行餘額與歷史持倉都會納入資產趨勢；目前至少需要兩個不同月份才能看出變化。':'請匯入至少兩個不同月份的月度總覽、銀行餘額或歷史持倉資料。';return renderEmpty('歷史資料不足',detail);}
     const min=Math.min(...rows.map(r=>r.totalTwd));
     const max=Math.max(...rows.map(r=>r.totalTwd));
     const low=Math.max(0,Math.floor((min-(max-min)*.35)/200000)*200000);
@@ -296,7 +296,7 @@
       </div>
       <div class="analysis-primary-grid">
         <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>資產成長軌跡</h2><p>總金融資產 vs 銀行存款 · 按月追蹤</p></div><span class="panel-topline">${esc(p.list[0]?.month||'—')} — ${esc(p.list.at(-1)?.month||'—')}</span></div>${chartHistory(a,p)}</div></section>
-        <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>每月變動從哪裡來？</h2><p>拆分外部存提與剩餘估算評價變動</p></div></div>${historyContribution(p)}<p class="micro-disclaimer">右側數字為該月份資產總額增減；藍綠色條長度為變動絕對值。</p></div></section>
+        <section class="panel"><div class="panel-inner"><div class="panel-heading"><div><h2>每月變動從哪裡來？</h2><p>拆分外部存提與剩餘估算評價變動</p></div></div>${historyContribution(p)}<p class="micro-disclaimer">${p.flowsAvailable?'右側數字為該月份資產總額增減；藍綠色條長度為變動絕對值。':'歷史資產總額與變化已計入匯入快照；因未提供外部淨流入，無法拆分存提款與估值變動。'}</p></div></section>
       </div>
       <div class="analysis-section-heading"><div><span class="eyebrow">PERFORMANCE BREAKDOWN</span><h2>投資績效解剖</h2><p>不是只有總獲利，還要了解獲利來自哪些部位與市場。</p></div><span class="method-chip">當前持倉 · 不含已實現損益</span></div>
       <div class="four-points">
@@ -670,7 +670,7 @@
       const plan=await WealthHistoryImport.parse(file);
       if(!plan.summary.length&&!plan.bankHistory.length&&!plan.holdingsHistory.length)throw new Error('三張資料工作表都沒有可匯入的資料列');
       state.historyImportPlan=plan;
-      byId('history-import-preview').innerHTML=`<p>即將匯入以下工作表。相同月份會更新該工作表的資料，其他工作表與月份保留。</p><ul class="history-import-list">${historyImportPreviewRow('月度總覽',plan.summary,state.data.history)}${historyImportPreviewRow('銀行餘額',plan.bankHistory,state.data.bankHistory)}${historyImportPreviewRow('歷史持倉',plan.holdingsHistory,state.data.holdingsHistory)}</ul><p class="data-note">「銀行餘額」與「歷史持倉」只保存歷史快照，不會改變目前帳戶或投資部位；銀行快照不會建立目前餘額或更新分析趨勢。總資產趨勢使用「月度總覽」資料。</p>`;
+      byId('history-import-preview').innerHTML=`<p>即將匯入以下工作表。相同月份會更新該工作表的資料，其他工作表與月份保留。</p><ul class="history-import-list">${historyImportPreviewRow('月度總覽',plan.summary,state.data.history)}${historyImportPreviewRow('銀行餘額',plan.bankHistory,state.data.bankHistory)}${historyImportPreviewRow('歷史持倉',plan.holdingsHistory,state.data.holdingsHistory)}</ul><p class="data-note">「銀行餘額」與「歷史持倉」不會改變目前帳戶或投資部位，但會納入資產歷史趨勢。同月份有「月度總覽」時，以總資產金額為準，快照資料補足未提供的類別金額。</p>`;
       byId('history-import-error').textContent='';byId('history-import-apply').disabled=false;byId('history-import-dialog').showModal();
     }catch(error){toast(`Excel 匯入預覽失敗：${error.message||'檔案格式不正確'}`);}
   }

@@ -21,6 +21,29 @@
     entries.forEach(entry => { const key=getKey(entry); table.set(key,(table.get(key)||0)+getValue(entry)); });
     return [...table].map(([key,value])=>({key,value})).sort((a,b)=>b.value-a.value);
   }
+  function historyFromSnapshots(data, summaries, fx) {
+    const hasNumber=value=>value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value));
+    const monthOf=record=>/^\d{4}-\d{2}$/.test(String(record?.month||''))?String(record.month):null;
+    const bankValue=account=>hasNumber(account.valueTwd)?Number(account.valueTwd):amount(account.balance)*(hasNumber(account.fxRate)&&Number(account.fxRate)>0?Number(account.fxRate):fx(account.currency));
+    const holdingValue=holding=>hasNumber(holding.marketValueTwd)?Number(holding.marketValueTwd):amount(holding.quantity)*amount(holding.currentPrice)*(hasNumber(holding.fxRate)&&Number(holding.fxRate)>0?Number(holding.fxRate):fx(holding.currency));
+    const byMonth=new Map(summaries.map(record=>[record.month,record]));
+    const banksByMonth=new Map((Array.isArray(data.bankHistory)?data.bankHistory:[]).map(record=>[monthOf(record),record]).filter(([month])=>month));
+    const holdingsByMonth=new Map((Array.isArray(data.holdingsHistory)?data.holdingsHistory:[]).map(record=>[monthOf(record),record]).filter(([month])=>month));
+    const months=new Set([...byMonth.keys(),...banksByMonth.keys(),...holdingsByMonth.keys()]);
+    return [...months].sort().map(month=>{
+      const summary=byMonth.get(month),bankSnapshot=banksByMonth.get(month),holdingsSnapshot=holdingsByMonth.get(month);
+      const bankRows=Array.isArray(bankSnapshot?.accounts)?bankSnapshot.accounts:[],holdingRows=Array.isArray(holdingsSnapshot?.holdings)?holdingsSnapshot.holdings:[];
+      const bankCash=banksByMonth.has(month)?sum(bankRows,bankValue):null;
+      const holdingTotal=holdingsByMonth.has(month)?sum(holdingRows,holdingValue):null;
+      const holdingType=type=>holdingsByMonth.has(month)?sum(holdingRows.filter(row=>row.type===type),holdingValue):null;
+      const component=(field,fallback)=>hasNumber(summary?.[field])?Number(summary[field]):fallback;
+      const cashTwd=component('cashTwd',bankCash),twStockTwd=component('twStockTwd',holdingType('tw_stock'));
+      const usStockTwd=component('usStockTwd',holdingType('us_stock')),fundTwd=component('fundTwd',holdingType('fund'));
+      const totalTwd=summary?amount(summary.totalTwd):(cashTwd??0)+(holdingTotal??0);
+      const flow=summary?.netFlowTwd,netFlowTwd=hasNumber(flow)?Number(flow):null;
+      return {...summary,month,totalTwd,netFlowTwd,cashTwd,twStockTwd,usStockTwd,fundTwd};
+    });
+  }
   function analyze(data) {
     const fx = currency => currency === 'TWD' ? 1 : amount(data.fxRates?.[currency]);
     const asOf = data.meta?.asOf || '2026-10-10';
@@ -65,10 +88,11 @@
     if(institutionTopWeight>=40)risks.push({level:'attention',label:'機構集中',detail:`最大往來機構占總資產 ${institutionTopWeight.toFixed(1)}%，可檢查單一機構存放規模。`});
     const rawHistory=Array.isArray(data.history)?data.history.filter(x=>/^\d{4}-\d{2}$/.test(x.month) && Number.isFinite(Number(x.totalTwd))).sort((a,b)=>a.month.localeCompare(b.month)):[];
     const latestMonth=String(asOf).slice(0,7);
-    const snapshot=rawHistory.map(r=>({...r,totalTwd:amount(r.totalTwd),netFlowTwd:Number.isFinite(Number(r.netFlowTwd)) && r.netFlowTwd!==null && r.netFlowTwd!==undefined ? Number(r.netFlowTwd):null}));
+    const snapshot=historyFromSnapshots(data,rawHistory,fx);
     const currentSnapshot={month:latestMonth,totalTwd:total,netFlowTwd:null,cashTwd:cash,twStockTwd:groups[1].valueTwd,usStockTwd:groups[2].valueTwd,fundTwd:groups[3].valueTwd};
-    if(snapshot.length && snapshot.at(-1).month===latestMonth){const prev=snapshot.at(-1);snapshot[snapshot.length-1]={...prev,...currentSnapshot,netFlowTwd:prev.netFlowTwd};}
-    else if(!snapshot.length || snapshot.at(-1).month<latestMonth){snapshot.push(currentSnapshot);}
+    const hasCurrentAssets=(data.bankAccounts||[]).length>0||(data.holdings||[]).length>0;
+    if(hasCurrentAssets&&snapshot.length&&snapshot.at(-1).month===latestMonth){const prev=snapshot.at(-1);snapshot[snapshot.length-1]={...prev,...currentSnapshot,netFlowTwd:prev.netFlowTwd};}
+    else if(hasCurrentAssets&&(!snapshot.length||snapshot.at(-1).month<latestMonth)){snapshot.push(currentSnapshot);}
     const history=snapshot.map((point,i)=>{
       const before=i?snapshot[i-1]:null;
       const delta=before?point.totalTwd-before.totalTwd:null;
